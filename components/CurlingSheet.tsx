@@ -87,7 +87,7 @@ export default function CurlingSheet({ stones, config, width, height, canThrow, 
 
         if (swipeDist > 15 && dy < -10) {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-          const maxDrag = 250;
+          const maxDrag = 100;
           const power = Math.min(swipeDist / maxDrag, 1);
           const angle = Math.atan2(dx, -dy);
           onThrowRef.current(power, angle);
@@ -104,7 +104,7 @@ export default function CurlingSheet({ stones, config, width, height, canThrow, 
   ).current;
 
   const dragDist = dragOffset ? Math.sqrt(dragOffset.dx ** 2 + dragOffset.dy ** 2) : 0;
-  const dragPower = Math.min(dragDist / 250, 1);
+  const dragPower = Math.min(dragDist / 100, 1);
   const isDragging = !!dragOffset && dragDist > 5;
 
   const arrowEndX = isDragging ? stoneStartX - dragOffset!.dx * 1.2 : stoneStartX;
