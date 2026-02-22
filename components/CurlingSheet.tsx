@@ -89,7 +89,7 @@ export default function CurlingSheet({ stones, config, width, height, canThrow, 
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
           const maxDrag = 250;
           const power = Math.min(swipeDist / maxDrag, 1);
-          const angle = Math.atan2(-dx, dy);
+          const angle = Math.atan2(dx, -dy);
           onThrowRef.current(power, angle);
         }
 
