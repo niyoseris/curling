@@ -4,7 +4,6 @@ import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useGame } from '@/contexts/GameContext';
 import CurlingSheet from '@/components/CurlingSheet';
-import PowerMeter from '@/components/PowerMeter';
 import Scoreboard from '@/components/Scoreboard';
 import GameMenu from '@/components/GameMenu';
 import EndSummary from '@/components/EndSummary';
@@ -12,9 +11,9 @@ import GameOver from '@/components/GameOver';
 import { stepPhysics, isAnyStoneMoving } from '@/lib/physics';
 import Colors from '@/constants/colors';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const SHEET_WIDTH = Math.min(SCREEN_WIDTH - 32, 340);
-const SHEET_HEIGHT = SHEET_WIDTH * 2;
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const SHEET_WIDTH = Math.min(SCREEN_WIDTH - 24, 360);
+const SHEET_HEIGHT = Math.min(SHEET_WIDTH * 2, SCREEN_HEIGHT * 0.68);
 
 export default function GameScreen() {
   const insets = useSafeAreaInsets();
@@ -122,6 +121,9 @@ export default function GameScreen() {
           config={game.config}
           width={SHEET_WIDTH}
           height={SHEET_HEIGHT}
+          canThrow={canThrow}
+          onThrow={handleThrow}
+          playerTeam={game.playerTeam}
         />
         {aiThinking && (
           <View style={styles.aiThinkingOverlay}>
@@ -132,21 +134,11 @@ export default function GameScreen() {
         )}
       </View>
 
-      <View style={[styles.controlsContainer, { paddingBottom: insets.bottom + webBottomInset + 8 }]}>
-        {canThrow ? (
-          <PowerMeter onThrow={handleThrow} disabled={!canThrow} />
-        ) : (
-          <View style={styles.waitingContainer}>
-            <Text style={styles.waitingText}>
-              {isBusy
-                ? game.phase === 'ai_thinking'
-                  ? 'AI is choosing a shot...'
-                  : 'Stone in motion...'
-                : 'Waiting...'}
-            </Text>
-          </View>
-        )}
-      </View>
+      {isBusy && !aiThinking && (
+        <View style={[styles.statusBar, { paddingBottom: insets.bottom + webBottomInset + 8 }]}>
+          <Text style={styles.statusText}>Stone in motion...</Text>
+        </View>
+      )}
 
       {game.phase === 'end_summary' && (
         <EndSummary
@@ -183,17 +175,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     position: 'relative',
   },
-  controlsContainer: {
-    backgroundColor: '#1B2838',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-  waitingContainer: {
-    padding: 24,
+  statusBar: {
     alignItems: 'center',
+    paddingVertical: 12,
   },
-  waitingText: {
-    fontSize: 14,
+  statusText: {
+    fontSize: 13,
     fontWeight: '600',
     color: '#607D8B',
   },

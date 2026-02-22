@@ -61,15 +61,15 @@ export default function GameMenu({ onStart }: GameMenuProps) {
           <Text style={styles.rulesTitle}>HOW TO PLAY</Text>
           <View style={styles.ruleRow}>
             <View style={[styles.ruleDot, { backgroundColor: Colors.stoneRed }]} />
-            <Text style={styles.ruleText}>Drag the power meter to set throw strength</Text>
+            <Text style={styles.ruleText}>Swipe your finger upward on the ice to throw</Text>
           </View>
           <View style={styles.ruleRow}>
             <View style={[styles.ruleDot, { backgroundColor: Colors.stoneYellow }]} />
-            <Text style={styles.ruleText}>Slide the aim control to adjust direction</Text>
+            <Text style={styles.ruleText}>Swipe harder for more power, angle to aim</Text>
           </View>
           <View style={styles.ruleRow}>
             <View style={[styles.ruleDot, { backgroundColor: '#FFFFFF' }]} />
-            <Text style={styles.ruleText}>Get your stones closest to the center</Text>
+            <Text style={styles.ruleText}>Get your stones closest to the center to score</Text>
           </View>
         </View>
       </View>
