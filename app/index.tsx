@@ -1,28 +1,36 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
-import { View, StyleSheet, Dimensions, Platform, Text } from 'react-native';
+import { View, StyleSheet, Dimensions, Platform, useWindowDimensions } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useGame } from '@/contexts/GameContext';
 import CurlingSheet from '@/components/CurlingSheet';
+import SwipeZone from '@/components/SwipeZone';
 import Scoreboard from '@/components/Scoreboard';
 import GameMenu from '@/components/GameMenu';
 import EndSummary from '@/components/EndSummary';
 import GameOver from '@/components/GameOver';
 import { stepPhysics, isAnyStoneMoving } from '@/lib/physics';
-import Colors from '@/constants/colors';
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const SHEET_WIDTH = Math.min(SCREEN_WIDTH - 24, 360);
-const SHEET_HEIGHT = Math.min(SHEET_WIDTH * 2, SCREEN_HEIGHT * 0.68);
 
 export default function GameScreen() {
   const insets = useSafeAreaInsets();
+  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
   const webTopInset = Platform.OS === 'web' ? 67 : 0;
   const webBottomInset = Platform.OS === 'web' ? 34 : 0;
   const game = useGame();
   const animationRef = useRef<ReturnType<typeof requestAnimationFrame> | null>(null);
   const stonesRef = useRef(game.stones);
   const [aiThinking, setAiThinking] = useState(false);
+
+  const topPadding = insets.top + webTopInset;
+  const bottomPadding = insets.bottom + webBottomInset;
+  const scoreboardHeight = 76;
+  const availableHeight = SCREEN_HEIGHT - topPadding - bottomPadding - scoreboardHeight;
+
+  const gameAreaHeight = Math.floor(availableHeight * (2 / 3));
+  const swipeAreaHeight = availableHeight - gameAreaHeight;
+
+  const SHEET_WIDTH = Math.min(SCREEN_WIDTH - 24, 360);
+  const SHEET_HEIGHT = Math.min(SHEET_WIDTH * 2.1, gameAreaHeight - 8);
 
   stonesRef.current = game.stones;
 
@@ -101,7 +109,7 @@ export default function GameScreen() {
   const isBusy = game.phase === 'throwing' || game.phase === 'ai_throwing' || game.phase === 'ai_thinking';
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + webTopInset }]}>
+    <View style={[styles.container, { paddingTop: topPadding }]}>
       <StatusBar style="light" />
 
       <Scoreboard
@@ -115,30 +123,26 @@ export default function GameScreen() {
         isPlayerTurn={isPlayerTurn}
       />
 
-      <View style={styles.sheetContainer}>
+      <View style={[styles.gameArea, { height: gameAreaHeight }]}>
         <CurlingSheet
           stones={game.stones}
           config={game.config}
           width={SHEET_WIDTH}
           height={SHEET_HEIGHT}
+        />
+      </View>
+
+      <View style={{ paddingBottom: bottomPadding }}>
+        <SwipeZone
           canThrow={canThrow}
           onThrow={handleThrow}
           playerTeam={game.playerTeam}
+          isBusy={isBusy}
+          isAiThinking={aiThinking}
+          width={SCREEN_WIDTH}
+          height={swipeAreaHeight}
         />
-        {aiThinking && (
-          <View style={styles.aiThinkingOverlay}>
-            <View style={styles.aiThinkingBadge}>
-              <Text style={styles.aiThinkingText}>AI is thinking...</Text>
-            </View>
-          </View>
-        )}
       </View>
-
-      {isBusy && !aiThinking && (
-        <View style={[styles.statusBar, { paddingBottom: insets.bottom + webBottomInset + 8 }]}>
-          <Text style={styles.statusText}>Stone in motion...</Text>
-        </View>
-      )}
 
       {game.phase === 'end_summary' && (
         <EndSummary
@@ -169,37 +173,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#0D1B2A',
   },
-  sheetContainer: {
-    flex: 1,
+  gameArea: {
     alignItems: 'center',
     justifyContent: 'center',
-    position: 'relative',
-  },
-  statusBar: {
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  statusText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#607D8B',
-  },
-  aiThinkingOverlay: {
-    position: 'absolute',
-    bottom: 16,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-  },
-  aiThinkingBadge: {
-    backgroundColor: 'rgba(255, 179, 0, 0.9)',
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  aiThinkingText: {
-    color: '#263238',
-    fontSize: 13,
-    fontWeight: '700',
   },
 });
